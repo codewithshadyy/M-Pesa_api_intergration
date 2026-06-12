@@ -150,3 +150,47 @@ exports.callback = async (req, res) => {
     return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   }
 }
+
+
+
+exports.checkStatus = async (req,res) => {
+
+
+
+
+          try {
+    const { checkoutRequestID } = req.params;
+ 
+    
+    const transaction = await Transaction.findOne({ checkoutRequestID });
+    if (!transaction) {
+      return res.status(404).json({ error: "Transaction not found" });
+    }
+ 
+    
+    if (transaction.status !== "PENDING") {
+      return res.json({
+        status: transaction.status,
+        mpesaReceiptNumber: transaction.mpesaReceiptNumber,
+        amount: transaction.amount,
+        phone: transaction.phone,
+        resultDesc: transaction.resultDesc,
+      });
+    }
+ 
+    
+    const darajaStatus = await queryStkStatus(checkoutRequestID);
+ 
+    return res.json({
+      status: "PENDING",
+      darajaResultCode: darajaStatus.ResultCode,
+      darajaResultDesc: darajaStatus.ResultDesc,
+    });
+
+        
+    } catch (error) {
+         console.error("Status check error:", error.response?.data || error.message);
+    return res.status(500).json({ error: "Could not fetch status" });
+    }
+    
+    }
