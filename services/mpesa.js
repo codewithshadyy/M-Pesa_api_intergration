@@ -14,7 +14,7 @@ exports.getAccessToken = async () => {
     const res = await axios.fetch(
          'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
 
-         {Headers:{
+         {headers:{
             Authorization:`Basic ${auth}`
         }}
 
@@ -64,7 +64,7 @@ exports.initiateStkPUsh = async (phone, amount, accountRef, description) => {
         `${process.env.BASE_URL}/mpesa/stkpush/v1/processrequest`,
         payload,
         {
-            Headers:{
+            headers:{
                 Authorization: `Bearer ${token}`,
                 "Content-Type":"application/json"
             }
@@ -73,4 +73,30 @@ exports.initiateStkPUsh = async (phone, amount, accountRef, description) => {
 
     return response.data
     
+}
+
+exports.queryStkStatus = (checkoutRequestID)=>{
+
+    const token = await this.getAccessToken()
+    const {password, timestamp} = this.generatePassword()
+
+    const response = await axios.fetch(
+        `${process.env.BASE_URL}/mpesa/stkpushqueryStatus/v1/query`,
+        {
+            BusinessShortCode: process.env.SHORTCODE,
+            Password: password,
+            Timestamp: timestamp,
+            CheckoutRequestID: checkoutRequestID,
+            
+        },
+        {
+            headers:{
+                Authorization:`Bearer ${token}`,
+                "Content-Type":"application/json"
+
+            }
+        }
+    )
+return response.data
+
 }
