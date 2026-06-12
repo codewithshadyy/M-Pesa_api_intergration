@@ -5,25 +5,22 @@ const Transaction = require("../models/Transaction")
 dotenv.config()
 
 
-exports.getAccessToken = async () => {
+ async function getAccessToken () {
 
     const auth = Buffer.from(
-        `${process.env.CONSUMER_KEY}:{process.env.CONSUMER_SECRET}`
+        `${process.env.CONSUMER_KEY}:${process.env.CONSUMER_SECRET}`
     ).toString("base64")
 
-    const res = await axios.fetch(
+    const res = await axios.get(
          `${process.env.BASE_URL}/oauth/v1/generate?grant_type=client_credentials`,
 
          {headers:{
             Authorization:`Basic ${auth}`
-        }}
-
-        
-    )
+        }})
     return res.data.access_token
 }
 
-exports.generatePassword = ()=>{
+function generatePassword (){
     const timestamp = new Date()
     .toISOString()
     .replace(/[^0-9]/g,'')
@@ -37,11 +34,11 @@ exports.generatePassword = ()=>{
 }
 }
 
-exports.initiateStkPUsh = async (phone, amount, accountRef, description) => {
+ async function initiateStkPush (phone, amount, accountRef, description)  {
 
 
-    const token = await this.getAccessToken()
-    const {password, timestamp}= this.generatePassword()
+    const token = await getAccessToken()
+    const {password, timestamp}= generatePassword()
 
     const payload = {
         BusinessShortCode: process.env.SHORTCODE,
@@ -52,15 +49,15 @@ exports.initiateStkPUsh = async (phone, amount, accountRef, description) => {
         PartyA:phone,
         PartyB:process.env.SHORTCODE,
         PhoneNumber:phone,
-        CallBackUrl=process.env.CALLBACK_URL,
-        AccountReference:accountRef.subString(0,12),
-        TransactionDesc:description.subString(0,13)
+        CallBackURL:process.env.CALLBACK_URL,
+        AccountReference:accountRef.substring(0,12),
+        TransactionDesc:description.substring(0,13)
 
  
     }
 
 
-    const response = await axios.fetch(
+    const response = await axios.post(
         `${process.env.BASE_URL}/mpesa/stkpush/v1/processrequest`,
         payload,
         {
@@ -75,10 +72,10 @@ exports.initiateStkPUsh = async (phone, amount, accountRef, description) => {
     
 }
 
-exports.queryStkStatus = (checkoutRequestID)=>{
+ async function queryStkStatus (checkoutRequestID){
 
-    const token = await this.getAccessToken()
-    const {password, timestamp} = this.generatePassword()
+    const token = await getAccessToken()
+    const {password, timestamp} = generatePassword()
 
     const response = await axios.fetch(
         `${process.env.BASE_URL}/mpesa/stkpushqueryStatus/v1/query`,
@@ -100,3 +97,5 @@ exports.queryStkStatus = (checkoutRequestID)=>{
 return response.data
 
 }
+
+module.exports ={getAccessToken, initiateStkPush, queryStkStatus}

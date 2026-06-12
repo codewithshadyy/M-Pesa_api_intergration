@@ -2,8 +2,9 @@
 
 const express = require("express")
 const router = express.Router()
-const {makePayment} = require("../controllers/mpesa")
+const {makePayment, callback} = require("../controllers/mpesa")
 router.post("/pay", makePayment)
+router.post("/callback", callback)
 
 
 module.exports = router
