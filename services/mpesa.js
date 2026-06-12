@@ -16,6 +16,22 @@ exports.getAccessToken = async () => {
          {Headers:{
             Authorization:`Basic ${auth}`
         }}
+
+        
     )
-    
+    return res.data.access_token
+}
+
+exports.generatePassword = ()=>{
+    const timestamp = new Date()
+    .toISOString()
+    .replace(/[^0-9]/g,'')
+    .slice(0,14)
+
+    const raw = `${process.env.SHORTCODE}${process.env.PASSKEY}${timestamp}`
+
+    return{
+        password:Buffer.from(raw).toString('base64'),
+        timestamp
+}
 }
