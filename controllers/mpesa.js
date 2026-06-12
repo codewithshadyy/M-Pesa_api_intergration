@@ -9,53 +9,54 @@ require("dotenv").config()
 
  exports.makePayment = async (req,res) => {
 
-    try {
-
-
-        let {phone, amount, accountReference, description} = req.body
-
-
-        if(!phone || !amount){
-            return res.status(400).json({
-
-                   error: "phone and amount are required" 
-                
-            })
-        }
-
-        phone = phone.toString().replace(/^(\+254|0)/, "254")
-
-        if(!/^2547\d{8}$/.test(phone)){
-            return res.status(400).json({
-                success:false,
-                Message:"Invalid format:use format 0708663597 0r 254708663597"
-            })
-        }
-
-        if (amount < 1) {
+try {
+    let { phone, amount, accountReference, description } = req.body;
+ 
+    
+    if (!phone || !amount) {
+      return res.status(400).json({ error: "phone and amount are required" });
+    }
+ 
+    
+    phone = phone.toString().trim().replace(/^(\+254|0)/, "254");
+    
+    if (!/^254[71]\d{8}$/.test(phone)) {
+      return res.status(400).json({
+        error: "Invalid phone. Use format: 0712345678 or 254712345678",
+      });
+    }
+ 
+    if (amount < 1) {
       return res.status(400).json({ error: "Amount must be at least KES 1" });
     }
-
-
+ 
     accountReference = accountReference || "ORDER001";
     description = description || "Payment";
-
-
-      const stkResponse =  initiateStkPush(
+ 
+    
+    const stkResponse = await initiateStkPush(
       phone,
       amount,
       accountReference,
       description
     );
+ 
+    
+ 
 
-     if (stkResponse.ResponseCode !== "0") {
+    const responseCode = String(stkResponse.ResponseCode ?? "");
+    const promptWasSent =
+      responseCode === "0" || stkResponse.CheckoutRequestID;
+ 
+    if (!promptWasSent) {
       return res.status(502).json({
         error: "Failed to initiate payment",
         details: stkResponse,
       });
     }
+ 
 
-     const transaction = await Transaction.create({
+    const transaction = await Transaction.create({
       merchantRequestID: stkResponse.MerchantRequestID,
       checkoutRequestID: stkResponse.CheckoutRequestID,
       phone,
@@ -64,24 +65,24 @@ require("dotenv").config()
       description,
       status: "PENDING",
     });
-
-     return res.status(200).json({
+ 
+    return res.status(200).json({
       message: "STK Push sent. Ask customer to enter PIN.",
       checkoutRequestID: stkResponse.CheckoutRequestID,
       transactionId: transaction._id,
     });
+  } catch (error) {
 
-        
-    } catch (error) {
-
-            console.error("STK Push error:", error.response?.data || error.message);
-       return res.status(500).json({
-            success:false,
-            details:error.response?.data || error.message
-        })
-    }
+    console.error("  Daraja:", JSON.stringify(error.response?.data ?? null, null, 2));
+    return res.status(500).json({
+      error: "Internal server error",
+      details: error.response?.data || error.message,
+    });
+  }
+};
+ 
     
-}
+
 
 
 
@@ -198,10 +199,12 @@ exports.checkStatus = async (req,res) => {
 
     exports.getTransactions = async (req, res) => {
 
-        const transaction = await Transaction.find().sort({createdAt:-1}).limit(10)
+        const transactions = await Transaction.find().sort({createdAt:-1}).limit(10)
+
+        console.log(transactions)
         return res.status(200).json({
             success:true,
-            data:transaction
+            data:transactions
         })
         
     }
