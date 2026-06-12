@@ -194,3 +194,14 @@ exports.checkStatus = async (req,res) => {
     }
     
     }
+
+
+    exports.getTransactions = async (req, res) => {
+
+        const transaction = await Transaction.find().sort({createdAt:-1}).limit(10)
+        return res.status(200).json({
+            success:true,
+            data:transaction
+        })
+        
+    }
