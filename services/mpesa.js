@@ -1,6 +1,7 @@
 
 const dotenv = require("dotenv")
 const axios = require("axios")
+const Transaction = require("../models/Transaction")
 dotenv.config()
 
 
@@ -34,4 +35,42 @@ exports.generatePassword = ()=>{
         password:Buffer.from(raw).toString('base64'),
         timestamp
 }
+}
+
+exports.initiateStkPUsh = async (phone, amount, accountRef, description) => {
+
+
+    const token = await this.getAccessToken()
+    const {password, timestamp}= this.generatePassword()
+
+    const payload = {
+        BusinessShortCode: process.env.SHORTCODE,
+        Password: password,
+        Timestamp: timestamp,
+        TransactionType:"CustomerPayBillOnline",
+        Amount:Math.round(amount),
+        PartyA:phone,
+        PartyB:process.env.SHORTCODE,
+        PhoneNumber:phone,
+        CallBackUrl=process.env.CALLBACK_URL,
+        AccountReference:accountRef.subString(0,12),
+        TransactionDesc:description.subString(0,13)
+
+ 
+    }
+
+
+    const response = await axios.fetch(
+        `${process.env.BASE_URL}/mpesa/stkpush/v1/processrequest`,
+        payload,
+        {
+            Headers:{
+                Authorization: `Bearer ${token}`,
+                "Content-Type":"application/json"
+            }
+        }
+    )
+
+    return response.data
+    
 }
