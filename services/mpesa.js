@@ -12,7 +12,7 @@ exports.getAccessToken = async () => {
     ).toString("base64")
 
     const res = await axios.fetch(
-         'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+         `${process.env.BASE_URL}/oauth/v1/generate?grant_type=client_credentials`,
 
          {headers:{
             Authorization:`Basic ${auth}`
