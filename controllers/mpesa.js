@@ -22,7 +22,7 @@ try {
     
     if (!/^254[71]\d{8}$/.test(phone)) {
       return res.status(400).json({
-        error: "Invalid phone. Use format: 0712345678 or 254712345678",
+        error: "Invalid phone. Use format: 0708663597 or 254708663597",
       });
     }
  
@@ -30,8 +30,8 @@ try {
       return res.status(400).json({ error: "Amount must be at least KES 1" });
     }
  
-    accountReference = accountReference || "ORDER001";
-    description = description || "Payment";
+    accountReference = accountReference || "codewithshadyy";
+    description = description || "Payment testing";
  
     
     const stkResponse = await initiateStkPush(
@@ -45,8 +45,7 @@ try {
  
 
     const responseCode = String(stkResponse.ResponseCode ?? "");
-    const promptWasSent =
-      responseCode === "0" || stkResponse.CheckoutRequestID;
+    const promptWasSent =responseCode === "0" || stkResponse.CheckoutRequestID;
  
     if (!promptWasSent) {
       return res.status(502).json({
