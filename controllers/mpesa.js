@@ -72,7 +72,7 @@ try {
     });
   } catch (error) {
 
-    console.error("  Daraja:", JSON.stringify(error.response?.data ?? null, null, 2));
+ 
     return res.status(500).json({
       error: "Internal server error",
       details: error.response?.data || error.message,
@@ -91,7 +91,7 @@ exports.callback = async (req, res) => {
  
     if (!callbackData) {
       console.warn(" Invalid callback payload received");
-      return res.status(400).json({ error: "Invalid callback" });
+      return res.status(400).json({ error: "Invalid callback" })
     }
  
     const {
@@ -100,54 +100,54 @@ exports.callback = async (req, res) => {
       ResultCode,
       ResultDesc,
       CallbackMetadata,
-    } = callbackData;
+    } = callbackData
  
-    console.log(` Callback received | ResultCode: ${ResultCode} | ${ResultDesc}`);
+    console.log(` Callback received | ResultCode: ${ResultCode} | ${ResultDesc}`)
  
     
     const transaction = await Transaction.findOne({
       checkoutRequestID: CheckoutRequestID,
-    });
+    })
  
     if (!transaction) {
-      console.warn(` Transaction not found: ${CheckoutRequestID}`);
+      console.warn(` Transaction not found: ${CheckoutRequestID}`)
       
-      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" })
     }
  
     
     if (ResultCode === 0) {
       
-      const metadata = {};
+      const metadata = {}
       CallbackMetadata?.Item?.forEach((item) => {
-        if (item.Value !== undefined) metadata[item.Name] = item.Value;
-      });
+        if (item.Value !== undefined) metadata[item.Name] = item.Value
+      })
  
-      transaction.status = "SUCCESS";
-      transaction.mpesaReceiptNumber = metadata.MpesaReceiptNumber;
-      transaction.transactionDate = String(metadata.TransactionDate);
-      transaction.resultCode = ResultCode;
-      transaction.resultDesc = ResultDesc;
-      transaction.callbackPayload = callbackData;
+      transaction.status = "SUCCESS"
+      transaction.mpesaReceiptNumber = metadata.MpesaReceiptNumber
+      transaction.transactionDate = String(metadata.TransactionDate)
+      transaction.resultCode = ResultCode
+      transaction.resultDesc = ResultDesc
+      transaction.callbackPayload = callbackData
  
-      console.log(`Payment SUCCESS | Receipt: ${metadata.MpesaReceiptNumber} | Amount: ${metadata.Amount}`);
+      console.log(`Payment SUCCESS | Receipt: ${metadata.MpesaReceiptNumber} | Amount: ${metadata.Amount}`)
     } else {
       
-      transaction.status = ResultCode === 1032 ? "CANCELLED" : "FAILED";
-      transaction.resultCode = ResultCode;
-      transaction.resultDesc = ResultDesc;
-      transaction.callbackPayload = callbackData;
+      transaction.status = ResultCode === 1032 ? "CANCELLED" : "FAILED"
+      transaction.resultCode = ResultCode
+      transaction.resultDesc = ResultDesc
+      transaction.callbackPayload = callbackData
  
-      console.log(`Payment FAILED | Code: ${ResultCode} | ${ResultDesc}`);
+      console.log(`Payment FAILED | Code: ${ResultCode} | ${ResultDesc}`)
     }
  
-    await transaction.save();
+    await transaction.save()
  
     
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" })
   } catch (error) {
-    console.error("Callback processing error:", error.message);
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+   
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" })
   }
 }
 
@@ -200,7 +200,6 @@ exports.checkStatus = async (req,res) => {
 
         const transactions = await Transaction.find().sort({createdAt:-1}).limit(10)
 
-        console.log(transactions)
         return res.status(200).json({
             success:true,
             data:transactions
