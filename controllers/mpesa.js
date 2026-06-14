@@ -182,7 +182,9 @@ exports.checkStatus = async (req,res) => {
     const { checkoutRequestID } = req.params;
  
     
-    const transaction = await Transaction.findOne({ checkoutRequestID });
+    const transaction = await Transaction.findOne({ 
+      checkoutRequestID:req.params.checkoutRequestID
+     }).populate("user", "username email")
     if (!transaction) {
       return res.status(404).json({ error: "Transaction not found" });
     }
@@ -195,6 +197,11 @@ exports.checkStatus = async (req,res) => {
         amount: transaction.amount,
         phone: transaction.phone,
         resultDesc: transaction.resultDesc,
+        user:{
+          id:transaction.user._id,
+          username:transaction.user.username,
+          email:transaction.user.email
+        }
       });
     }
  
@@ -205,6 +212,11 @@ exports.checkStatus = async (req,res) => {
       status: "PENDING",
       darajaResultCode: darajaStatus.ResultCode,
       darajaResultDesc: darajaStatus.ResultDesc,
+       user: {
+        id: transaction.user._id,
+        username: transaction.user.username,
+        email: transaction.user.email,
+      }
     });
 
         
@@ -218,7 +230,7 @@ exports.checkStatus = async (req,res) => {
 
     exports.getTransactions = async (req, res) => {
 
-        const transactions = await Transaction.find().sort({createdAt:-1}).limit(10)
+        const transactions = await Transaction.find().populate("user","username, email").sort({createdAt:-1}).limit(10)
 
         return res.status(200).json({
             success:true,
