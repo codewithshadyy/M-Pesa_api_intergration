@@ -5,7 +5,12 @@ const mongoose =require("mongoose")
 
 const transactionSchema = mongoose.Schema({
 
+    user:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"Account",
+      required:true
 
+    },
     merchantRequestID: { type: String },
     checkoutRequestID: { type: String, unique: true },
     phone: { type: String, required: true },
