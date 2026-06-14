@@ -4,3 +4,7 @@ const {Register} = require("../controllers/accountControllers")
 
 
 router.post("/register", Register)
+
+
+
+module.exports = router
