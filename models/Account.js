@@ -2,7 +2,7 @@
 const mongoose = require("mongoose")
 
 
-const personSchema =  mongoose.Schema({
+const accountSchema =  mongoose.Schema({
     username:{
         type:String,
         trim:true,
@@ -26,6 +26,6 @@ const personSchema =  mongoose.Schema({
 }, {timestamps:true})
 
 
-const person = mongoose.model("Person", personSchema)
+const account = mongoose.model("Account", accountSchema)
 
-module.exports = person
+module.exports = account
