@@ -2,7 +2,8 @@
 
 const express = require("express")
 const Transaction = require("../models/Transaction")
-const {initiateStkPush, queryStkStatus} = require("../services/mpesa")
+const {initiateStkPush, queryStkStatus} = require("../services/mpesa");
+const { default: mongoose } = require("mongoose");
 
 
 require("dotenv").config()
@@ -10,11 +11,22 @@ require("dotenv").config()
  exports.makePayment = async (req,res) => {
 
 try {
-    let { phone, amount, accountReference, description } = req.body;
+    let { phone, amount, accountReference, description} = req.body
+
+    const userId = req.user
  
     
     if (!phone || !amount) {
       return res.status(400).json({ error: "phone and amount are required" });
+
+    }
+
+    if(!userId || !mongoose.Types.ObjectId.isValid(userId)){
+      return res.status(401).json({
+        success:false,
+        message:"A valid user required"
+      })
+
     }
  
     
@@ -56,6 +68,7 @@ try {
  
 
     const transaction = await Transaction.create({
+      user:userId,
       merchantRequestID: stkResponse.MerchantRequestID,
       checkoutRequestID: stkResponse.CheckoutRequestID,
       phone,
@@ -63,12 +76,19 @@ try {
       accountReference,
       description,
       status: "PENDING",
-    });
+    })
+
+    await transaction.populate("user", "username email")
  
     return res.status(200).json({
       message: "STK Push sent. Ask customer to enter PIN.",
       checkoutRequestID: stkResponse.CheckoutRequestID,
       transactionId: transaction._id,
+      InitiatedBy:{
+        id: transaction.user._id,
+        username: transaction.user.username,
+        email: transaction.user.email,
+      }
     });
   } catch (error) {
 

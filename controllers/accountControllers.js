@@ -67,7 +67,7 @@ exports.login = async (req,res) => {
             })
         }
 
-        passwordMatch = bcrypt.compare(user.password)
+        passwordMatch = bcrypt.compare(password,user.password)
 
         const token = await generateToken(user)
         return res.status(200).json({
