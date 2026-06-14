@@ -3,6 +3,7 @@ const app = express()
 const connectDB = require("./config/db")
 const check = require("./healthCheck/check")
 const mpesaRoutes = require("./routes/mpesa")
+const accountRoutes = require("./routes/accounts")
 
 const dotenv = require("dotenv")
 dotenv.config()
@@ -15,6 +16,7 @@ connectDB()
 //health check
 app.use("", check)
 app.use("/api/mpesa", mpesaRoutes)
+app.use("/api/accounts", accountRoutes)
 
 
 
