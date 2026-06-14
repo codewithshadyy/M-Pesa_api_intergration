@@ -9,7 +9,7 @@ exports.Register = async (req,res) => {
     try {
 
         const {username, email, password} = req.body
-        const personExists = await Person.findone({
+        const personExists = await Person.findOne({
             $or:[{username}, {email}]
         })
 
@@ -20,7 +20,7 @@ exports.Register = async (req,res) => {
             })
         }
 
-        const hashedPassword = bcrypt.hash(password, 10)
+        const hashedPassword = await bcrypt.hash(password, 10)
         const person = await Person.create({
             username,
             email,

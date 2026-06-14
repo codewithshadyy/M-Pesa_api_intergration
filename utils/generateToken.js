@@ -7,8 +7,8 @@ exports.generateToken =  async (user) => {
 
     return jwt.sign(
         {
-            user:req._id,
-            role:req.user.role
+            user:user._id,
+            role:user.role
         },
 
         process.env.JWT_SECRET,
